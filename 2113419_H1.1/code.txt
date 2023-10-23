@@ -1,0 +1,108 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#include<map>
+using namespace std;
+
+struct People_Type {
+    string name;
+    string pair_name;
+    string preference[1001];
+};
+// 字符串解析
+void Analysis(vector<People_Type>& people, string temp_message, int index) {
+    // 提取姓名
+    int h = 0;
+    while (temp_message.at(h) != ':') {
+        people[index].name += temp_message.at(h);
+        h++;
+    }
+    // 越过冒号到下一个字符
+    h++;
+    // 提取对应perference程度
+    int k = 0;
+    string temp_preference_name;
+    while (h < temp_message.length()) {
+        if (temp_message.at(h) != '>') {
+            temp_preference_name += temp_message.at(h);
+            h++;
+        }
+        else {
+            people[index].preference[k] = temp_preference_name;
+            temp_preference_name.clear();
+            h++;
+            k++;
+        }
+    }
+
+    people[index].preference[k] = temp_preference_name;
+}
+// 结果输出
+void Print(vector<People_Type>& men, int n) {
+    for (int k = 0; k < n; k++) {
+        cout << '(' << men[k].name << ',' << men[k].pair_name << ')' << endl;
+    }
+}
+int main() {
+    vector<People_Type> Men(1001);
+    vector<People_Type> Women(1001);
+    map<string, bool> men_list;
+    map<string, bool> women_list;
+    map<string, People_Type> women;
+    map<string, People_Type> men;
+    // 输入总配对数：n 对
+    int N;
+    cin >> N;
+    for (int k = 0; k < N; k++) {
+        men_list.insert(map<string, bool>::value_type(Men[k].name, 0));
+        women_list.insert(map<string, bool>::value_type(Women[k].name,0));
+        women.insert(map<string, People_Type>::value_type(Women[k].name, Women[k]));
+        men.insert(map<string, People_Type>::value_type(Men[k].name, Men[k]));
+    }
+    string Temp_Message;
+    // 输入男，即A，B，C……
+    for (int index = 0; index < N; index++) {
+        cin >> Temp_Message;
+        Analysis(Men, Temp_Message, index);
+    }
+    // 输入女，即x，y，z……
+    for (int index = 0; index < N; index++) {
+        cin >> Temp_Message;
+        Analysis(Women, Temp_Message, index);
+    }
+    // 匹配
+    //Match(Men, Women, Women_List, women, men,N);
+    int i = 0, j = 0;
+    while (i < N) {
+        if (women_list[Men[i].preference[j]] == 0) {//其中women_list初始值为0
+            Men[i].pair_name = Men[i].preference[j];
+            women[Men[i].preference[j]].pair_name = Men[i].name;
+            women_list[Men[i].preference[j]] = 1;
+            i++;
+        }
+        else if (women_list[Men[i].preference[j]] == 1) {
+            int t = 0;
+            while (t < N) {
+                if (women[Men[i].preference[j]].preference[t] == women[Men[i].preference[j]].pair_name) {
+                    j++;
+                    break;
+                }
+                else if (women[Men[i].preference[j]].preference[t] == Men[i].name) {
+                    Men[i].pair_name = Men[i].preference[j];
+                    women[Men[i].preference[j]].pair_name = Men[i].name;
+                    i = 0;
+                    j = 0;
+                    break;
+                }
+                else {
+                    t++;
+                }
+            }
+        }
+    }
+    // 输出
+    Print(Men, N);
+
+    return 0;
+
+}
